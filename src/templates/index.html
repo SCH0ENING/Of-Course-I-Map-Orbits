@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Orbits</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Map Orbits</h1>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="post">
+        <label>TLE Line 1:</label><br>
+        <input type="text" name="tle1" required><br>
+        <label>TLE Line 2:</label><br>
+        <input type="text" name="tle2" required><br>
+        <label>Launch Date (YYYY-MM-DD):</label><br>
+        <input type="text" name="launch_date" placeholder="2025-06-13" required><br>
+        <label>Launch Time (HH:MM:SS):</label><br>
+        <input type="text" name="launch_time" placeholder="21:33:00" required><br>
+        <label>TLE Epoch Date (YYYY-MM-DD):</label><br>
+        <input type="text" name="epoch_date" placeholder="2025-06-13" required><br>
+        <label>TLE Epoch Time (HH:MM:SS):</label><br>
+        <input type="text" name="epoch_time" placeholder="21:33:00" required><br>
+        <label>Launch Site:</label><br>
+        <select name="launch_site" onchange="toggleCustomFields(this)">
+            {% for site in launch_sites %}
+                <option value="{{ site }}">{{ site }}</option>
+            {% endfor %}
+        </select><br>
+        <div id="custom_coords" style="display: none;">
+            <label>Custom Latitude (DD°MM'SS"N/S):</label><br>
+            <input type="text" name="custom_lat" placeholder="34°37'58.1"N"><br>
+            <label>Custom Longitude (DDD°MM'SS"E/W):</label><br>
+            <input type="text" name="custom_lon" placeholder="120°36'38.5"W"><br>
+        </div>
+        <label>Sample Interval (minutes):</label><br>
+        <select name="sample_interval">
+            {% for interval in sample_intervals %}
+                <option value="{{ interval }}">{{ interval }}</option>
+            {% endfor %}
+        </select><br>
+        <label>Duration (minutes):</label><br>
+        <input type="text" name="duration" value="120"><br>
+        <input type="submit" value="Generate Orbit">
+    </form>
+    <script>
+        function toggleCustomFields(select) {
+            document.getElementById('custom_coords').style.display = select.value === 'Custom' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

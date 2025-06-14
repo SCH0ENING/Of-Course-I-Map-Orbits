@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Orbit Results</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Orbit Results</h1>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% else %}
+        <img src="{{ plot_url }}" alt="Orbit Plot" style="max-width: 100%;">
+        <p><a href="{{ kml_url }}">Download KML</a></p>
+    {% endif %}
+    <p><a href="/">Generate Another Orbit</a></p>
+</body>
+</html>
