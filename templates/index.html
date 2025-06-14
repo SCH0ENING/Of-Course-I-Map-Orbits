@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Orbits</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/script.js"></script>
+</head>
+<body>
+    <h1>Map Orbits</h1>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="post" id="orbitForm">
+        <!-- First TLE -->
+        <h2>First TLE</h2>
+        <label>TLE Line 1:</label><br>
+        <input type="text" name="tle1" value="{{ form_data.tle1 }}" required oninput="updateEpochFields()"><br>
+        <label>TLE Line 2:</label><br>
+        <input type="text" name="tle2" value="{{ form_data.tle2 }}" required><br>
+        <label>TLE Epoch Date (YYYY-MM-DD):</label><br>
+        <input type="text" name="epoch_date" id="epoch_date" value="{{ form_data.epoch_date }}" required><br>
+        <label>TLE Epoch Time (HH:MM:SS):</label><br>
+        <input type="text" name="epoch_time" id="epoch_time" value="{{ form_data.epoch_time }}" required><br>
+
+        <!-- Launch Details -->
+        <h2>Launch Details</h2>
+        <label>Launch Date (YYYY-MM-DD):</label><br>
+        <input type="text" name="launch_date" value="{{ form_data.launch_date }}" placeholder="2025-06-13" required><br>
+        <label>Launch Time (HH:MM:SS):</label><br>
+        <input type="text" name="launch_time" value="{{ form_data.launch_time }}" placeholder="21:33:00" required><br>
+        <label>Launch Site:</label><br>
+        <select name="launch_site" onchange="toggleCustomFields()">
+            {% for site in launch_sites %}
+                <option value="{{ site }}" {% if form_data.launch_site == site %}selected{% endif %}>{{ site }}</option>
+            {% endfor %}
+        </select><br>
+        <div id="custom_coords" style="display: {{ 'block' if form_data.launch_site == 'Custom' else 'none' }};">
+            <label>Custom Latitude (DD°MM'SS"N/S):</label><br>
+            <input type="text" name="custom_lat" value="{{ form_data.custom_lat }}" placeholder="34°37'58.1"N"><br>
+            <label>Custom Longitude (DDD°MM'SS"E/W):</label><br>
+            <input type="text" name="custom_lon" value="{{ form_data.custom_lon }}" placeholder="120°36'38.5"W"><br>
+        </div>
+        <label>Sample Interval (minutes):</label><br>
+        <select name="sample_interval">
+            {% for interval in sample_intervals %}
+                <option value="{{ interval }}" {% if form_data.sample_interval == interval|string %}selected{% endif %}>{{ interval }}</option>
+            {% endfor %}
+        </select><br>
+        <label>Duration (minutes):</label><br>
+        <input type="text" name="duration" value="{{ form_data.duration }}" required><br>
+        <label>Orbit Insertion Altitude (km):</label><br>
+        <input type="text" name="orbit_insertion_altitude" value="{{ form_data.orbit_insertion_altitude }}" required><br>
+        <label><input type="checkbox" name="include_coast_phase" {% if form_data.include_coast_phase %}checked{% endif %}> Include Coast Phase</label><br>
+
+        <!-- Orbit Indices -->
+        <h2>Orbit Indices</h2>
+        <label>First TLE Start Index:</label><br>
+        <input type="text" name="orbit_index_start" value="{{ form_data.orbit_index_start }}"><br>
+        <label>First TLE End Index:</label><br>
+        <input type="text" name="orbit_index_end" value="{{ form_data.orbit_index_end }}"><br>
+
+        <!-- Ascent Parameters -->
+        <h2>Ascent Parameters</h2>
+        <label>Max Q Altitude (km):</label><br>
+        <input type="text" name="max_q_alt" value="{{ form_data.max_q_alt }}" required><br>
+        <label>Max Q Downrange (km):</label><br>
+        <input type="text" name="max_q_downrange" value="{{ form_data.max_q_downrange }}" required><br>
+        <label>Stage Separation Altitude (km):</label><br>
+        <input type="text" name="stage_sep_alt" value="{{ form_data.stage_sep_alt }}" required><br>
+        <label>Stage Separation Downrange (km):</label><br>
+        <input type="text" name="stage_sep_downrange" value="{{ form_data.stage_sep_downrange }}" required><br>
+
+        <!-- De-Orbit Parameters -->
+        <h2>De-Orbit Parameters</h2>
+        <label>Re-Entry Point (index):</label><br>
+        <input type="text" name="reentry_point" value="{{ form_data.reentry_point }}"><br>
+        <label>De-Orbit Final Altitude (km):</label><br>
+        <input type="text" name="de_orbit_final_altitude" value="{{ form_data.de_orbit_final_altitude }}"><br>
+        <label>De-Orbit Burn Offset (minutes):</label><br>
+        <input type="text" name="de_orbit_burn_offset" value="{{ form_data.de_orbit_burn_offset }}"><br>
+
+        <!-- Booster Return -->
+        <h2>Booster Return</h2>
+        <label><input type="checkbox" name="include_booster" id="include_booster" onchange="toggleBoosterFields()" {% if form_data.include_booster %}checked{% endif %}> Include Booster Return</label><br>
+        <div id="booster_fields" style="display: {{ 'block' if form_data.include_booster else 'none' }};">
+            <label>Booster Apogee (km):</label><br>
+            <input type="text" name="booster_apogee" value="{{ form_data.booster_apogee }}"><br>
+            <label>Landing Latitude (DD°MM'SS"N/S):</label><br>
+            <input type="text" name="booster_land_lat" value="{{ form_data.booster_land_lat }}" placeholder="28°30'00"N"><br>
+            <label>Landing Longitude (DDD°MM'SS"E/W):</label><br>
+            <input type="text" name="booster_land_lon" value="{{ form_data.booster_land_lon }}" placeholder="80°30'00"W"><br>
+        </div>
+
+        <!-- Second TLE -->
+        <h2>Second TLE</h2>
+        <label><input type="checkbox" name="include_second_orbit" id="include_second_orbit" onchange="toggleSecondOrbitFields()" {% if form_data.include_second_orbit %}checked{% endif %}> Include Second Orbit</label><br>
+        <div id="second_orbit_fields" style="display: {{ 'block' if form_data.include_second_orbit else 'none' }};">
+            <label>Second TLE Line 1:</label><br>
+            <input type="text" name="tle1_second" value="{{ form_data.tle1_second }}" oninput="updateSecondEpochFields()"><br>
+            <label>Second TLE Line 2:</label><br>
+            <input type="text" name="tle2_second" value="{{ form_data.tle2_second }}"><br>
+            <label>Second TLE Epoch Date (YYYY-MM-DD):</label><br>
+            <input type="text" name="epoch_date_second" id="epoch_date_second" value="{{ form_data.epoch_date_second }}"><br>
+            <label>Second TLE Epoch Time (HH:MM:SS):</label><br>
+            <input type="text" name="epoch_time_second" id="epoch_time_second" value="{{ form_data.epoch_time_second }}"><br>
+            <label>Second TLE Start Index:</label><br>
+            <input type="text" name="second_orbit_index_start" value="{{ form_data.second_orbit_index_start }}"><br>
+            <label>Second TLE End Index:</label><br>
+            <input type="text" name="second_orbit_index_end" value="{{ form_data.second_orbit_index_end }}"><br>
+        </div>
+
+        <!-- Coast Phase -->
+        <h2>Coast Phase</h2>
+        <label>Coast Time (minutes):</label><br>
+        <input type="text" name="coast_time" value="{{ form_data.coast_time }}"><br>
+
+        <input type="submit" value="Generate Orbit">
+    </form>
+</body>
+</html>
